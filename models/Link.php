@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use \yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "link".
@@ -15,8 +17,9 @@ use Yii;
  *
  * @property Visit[] $visits
  */
-class Link extends \yii\db\ActiveRecord
+class Link extends ActiveRecord
 {
+    const SHORT_CODE_LENGTH = 6;
 
     /**
      * {@inheritdoc}
@@ -29,11 +32,26 @@ class Link extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => null,
+                'value' => time(),
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function rules()
     {
         return [
             [['visit_count'], 'default', 'value' => 0],
-            [['original_url', 'short_code', 'created_at'], 'required'],
+            [['original_url', 'short_code'], 'required'],
             [
                 ['original_url'],
                 'url',
@@ -42,7 +60,7 @@ class Link extends \yii\db\ActiveRecord
                 'enableIDN' => true,
             ],
             [['created_at', 'visit_count'], 'integer'],
-            [['short_code'], 'string', 'max' => 6],
+            [['short_code'], 'string', 'max' => self::SHORT_CODE_LENGTH],
             [['short_code'], 'unique'],
         ];
     }
@@ -69,24 +87,6 @@ class Link extends \yii\db\ActiveRecord
     public function getVisits()
     {
         return $this->hasMany(Visit::class, ['link_id' => 'id']);
-    }
-
-    
-    /**
-     * Generates a unique short code
-     * @return string
-     */
-    public function generateShortCode()
-    {
-        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $code = '';
-        for ($i = 0; $i < 6; $i++) {
-            $code .= $characters[rand(0, strlen($characters) - 1)];
-        }
-        if (self::find()->where(['short_code' => $code])->exists()) {
-            return $this->generateShortCode();
-        }
-        return $code;
     }
 
 }

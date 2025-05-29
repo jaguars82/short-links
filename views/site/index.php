@@ -15,29 +15,41 @@ $this->title = 'Сервис коротких ссылок';
 <div class="site-index">
 
     <div class="jumbotron text-center bg-transparent mt-5 mb-5">
-        <h1 class="display-4">Сервис коротких ссылок</h1>
-
-        <p class="lead">вставьте ссылку, нажмите кнопку!</p>
-
+        <h1 id="title" class="display-4">Сервис коротких ссылок</h1>
+        <p id="subtitle" class="lead">вставьте ссылку, нажмите кнопку!</p>
     </div>
 
-    <div class="body-content">
+    <div id="content" class="body-content">
 
         <?php $form = ActiveForm::begin([
             'id' => 'link-form',
+            'enableClientScript' => false,
+            'action' => ['link/shorten'],
             'fieldConfig' => [
-                'template' => "{label}\n{input}\n{error}",
-                'labelOptions' => ['class' => 'col-lg-1 col-form-label mr-lg-3'],
-                'inputOptions' => ['class' => 'col-lg-3 form-control'],
-                'errorOptions' => ['class' => 'col-lg-7 invalid-feedback'],
+                'template' => '<div class="d-flex justify-content-between">
+                    {label}
+                    {error}
+                </div>
+                {input}',
+                'errorOptions' => ['class' => 'text-danger text-end'],
             ],
         ]); ?>
 
-            <div class="form-group">
-                <div>
-                    <?= Html::submitButton('Создать короткую ссылку', ['class' => 'btn btn-lg btn-primary', 'name' => 'create-link-button']) ?>
-                </div>
+        <div class="row g-3 align-items-end">
+            <div class="col-auto flex-grow-1 position-relative">
+                <?= $form->field($model, 'original_url', [
+                    'options' => ['class' => 'mb-0 py-1'],
+                ])->textInput(['autofocus' => true]) ?>
             </div>
+
+            <div class="col-auto">
+                <?= Html::submitButton('OK', [
+                    'class' => 'btn btn-lg btn-primary',
+                    'name' => 'create-link-button',
+                    'id' => 'submit-button',
+                ]) ?>
+            </div>
+        </div>
 
         <?php ActiveForm::end(); ?>
 

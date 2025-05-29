@@ -3,6 +3,9 @@
 namespace app\models;
 
 use Yii;
+use \yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+
 
 /**
  * This is the model class for table "visit".
@@ -14,7 +17,7 @@ use Yii;
  *
  * @property Link $link
  */
-class Visit extends \yii\db\ActiveRecord
+class Visit extends ActiveRecord
 {
 
     /**
@@ -25,18 +28,36 @@ class Visit extends \yii\db\ActiveRecord
         return 'visit';
     }
 
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'accessed_at',
+                'updatedAtAttribute' => null,
+                'value' => time(),
+            ],
+        ];
+    }
+
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['link_id', 'ip_address', 'accessed_at'], 'required'],
-            [['link_id', 'accessed_at'], 'integer'],
+            [['link_id', 'ip_address'], 'required'],
+            [['link_id'], 'integer'],
             [['ip_address'], 'string', 'max' => 45],
             [['link_id'], 'exist', 'skipOnError' => true, 'targetClass' => Link::class, 'targetAttribute' => ['link_id' => 'id']],
         ];
     }
+
 
     /**
      * {@inheritdoc}
@@ -51,6 +72,7 @@ class Visit extends \yii\db\ActiveRecord
         ];
     }
 
+    
     /**
      * Gets query for [[Link]].
      *
