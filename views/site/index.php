@@ -16,7 +16,7 @@ $this->title = 'Сервис коротких ссылок';
 
     <div class="jumbotron text-center bg-transparent mt-5 mb-5">
         <h1 id="title" class="display-4">Сервис коротких ссылок</h1>
-        <p id="subtitle" class="lead">вставьте ссылку, нажмите кнопку!</p>
+        <p id="subtitle" class="lead">вставьте ссылку, нажмите кнопку</p>
     </div>
 
     <div id="content" class="body-content">
