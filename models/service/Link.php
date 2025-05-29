@@ -74,11 +74,17 @@ class Link extends BaseLink
 
 
     /**
-     * Checks if the original url is available
+     * Checks if the original URL is accessible (including IDN).
      * @return bool
      */
     public function isAccessible()
     {
+        $url = $this->prepareUrl($this->original_url);
+
+        if ($url === null) {
+            return false;
+        }
+
         $contextOptions = [
             'http' => [
                 'method' => 'GET',
@@ -91,25 +97,51 @@ class Link extends BaseLink
         $context = stream_context_create($contextOptions);
 
         try {
-            $headers = @get_headers($this->original_url, 1, $context);
+            $headers = @get_headers($url, 1, $context);
 
-            if ($headers === false || !is_array($headers)) {
+            if (!is_array($headers) || empty($headers[0])) {
                 return false;
             }
 
-            $statusLine = is_array($headers) ? $headers[0] : null;
-
-            if (!$statusLine || !preg_match('/HTTP\/\d\.\d\s+(\d+)/', $statusLine, $matches)) {
+            if (!preg_match('/HTTP\/\d\.\d\s+(\d+)/', $headers[0], $matches)) {
                 return false;
             }
 
             $httpCode = (int)$matches[1];
-
             return $httpCode >= self::HTTP_CODES_FROM && $httpCode < self::HTTP_CODES_TO;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable) {
             return false;
         }
+    }
+
+
+    /**
+     * Converts IDN to punycode.
+     * @param string $url
+     * @return string|null
+     */
+    private function prepareUrl(string $url)
+    {
+        $parts = parse_url($url);
+        if (!isset($parts['host'])) {
+            return null;
+        }
+
+        $asciiHost = idn_to_ascii($parts['host'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        if ($asciiHost === false) {
+            return null;
+        }
+
+        return sprintf(
+            '%s://%s%s%s%s%s',
+            $parts['scheme'] ?? 'http',
+            isset($parts['user']) ? $parts['user'] . (isset($parts['pass']) ? ':' . $parts['pass'] : '') . '@' : '',
+            $asciiHost,
+            isset($parts['port']) ? ':' . $parts['port'] : '',
+            $parts['path'] ?? '/',
+            isset($parts['query']) ? '?' . $parts['query'] : ''
+        ) . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
     }
 
 }

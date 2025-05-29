@@ -23,7 +23,6 @@ $this->title = 'Сервис коротких ссылок';
 
         <?php $form = ActiveForm::begin([
             'id' => 'link-form',
-            'enableClientScript' => false,
             'action' => ['link/shorten'],
             'fieldConfig' => [
                 'template' => '<div class="d-flex justify-content-between">
